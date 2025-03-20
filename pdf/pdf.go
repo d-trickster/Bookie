@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/jung-kurt/gofpdf"
+	"github.com/jung-kurt/gofpdf/v2"
 )
 
 const (
@@ -35,6 +35,7 @@ type Converter struct {
 	marginRight float64
 	bold        bool
 	italic      bool
+	indent      bool
 	alignment   string
 
 	skipUnknownElems bool
@@ -95,7 +96,7 @@ func (c *Converter) parse(source io.Reader) error {
 			switch t.Name.Local {
 
 			case "p":
-				c.pdf.Write(commonLineHeight, paragraphIndent)
+				c.indent = true
 
 			case "strong":
 				c.bold = true
@@ -202,7 +203,10 @@ func (c *Converter) parse(source io.Reader) error {
 			if len(strings.TrimSpace(s)) == 0 {
 				continue
 			}
-			// c.pdf.Write(commonLineHeight, s)
+			if c.indent {
+				s = paragraphIndent + s
+				c.indent = false
+			}
 			c.pdf.WriteAligned(0, commonLineHeight, s, c.alignment)
 		}
 	}
