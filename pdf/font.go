@@ -7,7 +7,7 @@ import (
 const (
 	commonFontName   = "common"
 	commonFontSize   = 15
-	commonLineHeight = 10
+	commonLineHeight = 9.5
 
 	coverTitleFontName = "cover"
 

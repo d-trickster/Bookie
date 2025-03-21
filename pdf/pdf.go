@@ -16,7 +16,7 @@ const (
 	marginTop   = 15
 	marginRight = 15
 
-	paragraphLn     = 5
+	paragraphLn     = 2
 	paragraphIndent = "        "
 
 	coverPageColorR = 200
@@ -142,6 +142,7 @@ func (c *Converter) parse(source io.Reader) error {
 					return fmt.Errorf("failed to decode description: %w", err)
 				}
 				c.writeCoverPage(&descr.TitleInfo)
+				c.pdf.AddPage()
 				if err := c.parse(strings.NewReader(descr.TitleInfo.Annotation.Content)); err != nil {
 					return fmt.Errorf("failed to parse annotation: %w", err)
 				}
@@ -168,7 +169,8 @@ func (c *Converter) parse(source io.Reader) error {
 			switch t.Name.Local {
 
 			case "p":
-				c.pdf.Write(commonLineHeight, "\n")
+				// c.pdf.Write(commonLineHeight, "\n")
+				c.pdf.Ln(commonLineHeight + paragraphLn)
 			case "strong":
 				c.bold = false
 				c.updateStyle()
@@ -203,11 +205,15 @@ func (c *Converter) parse(source io.Reader) error {
 			if len(strings.TrimSpace(s)) == 0 {
 				continue
 			}
-			if c.indent {
-				s = paragraphIndent + s
-				c.indent = false
+			if c.alignment == "" {
+				if c.indent {
+					s = paragraphIndent + s
+					c.indent = false
+				}
+				c.pdf.Write(commonLineHeight, s)
+			} else {
+				c.pdf.WriteAligned(0, commonLineHeight, s, c.alignment)
 			}
-			c.pdf.WriteAligned(0, commonLineHeight, s, c.alignment)
 		}
 	}
 
